@@ -1,6 +1,8 @@
 (Very) Simple Soil Hydrology Model
 ==================================
 
+[![DOI](https://zenodo.org/badge/374736375.svg)](https://zenodo.org/badge/latestdoi/374736375)
+
 A very simple, point-scale soil hydrology model based on the modified Richards equation from [the Community Land Model (CLM)](https://escomp.github.io/ctsm-docs/versions/release-clm5.0/html/tech_note/index.html), version 5.0, with some equations from CLM 4.x and pedotransfer functions from Balland et al. (2008). The basic model characterizes the vertical movement of water in a soil column and lateral sub-surface drainage at sub-daily time steps, driven by:
 
 - Initial soil volumetric water content (VWC) state;
