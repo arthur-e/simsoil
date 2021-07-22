@@ -26,10 +26,10 @@ from simsoil import Namespace, suppress_warnings, tridiag_solver
 from simsoil.transpiration import latent_heat_vapor, psychrometric_constant, radiation_net, svp_slope
 
 # From the Catchment land model of SMAP L4SM
-DEPTHS = -np.array((0.05, 0.1, 0.3, 0.7, 1.5, 3.0)).reshape((6,1)) # meters
+DEPTHS = -np.array((0.05, 0.15, 0.35, 0.75, 1.5, 3.0)).reshape((6,1)) # meters
 # Scaling ratios for soil organic carbon (i.e., ratio of volumetric SOC
 #   content, relative to top layer), from Endsley et al. (2020)
-SOC_RATIOS = np.array((1, 1.77, 3.82, 6.23, 9.56, 12.77)).reshape((6,1))
+SOC_RATIOS = np.array((1, 2.35, 4.25, 6.46, 9.56, 12.77)).reshape((6,1))
 
 class InfiltrationModel(object):
     '''
@@ -369,7 +369,7 @@ class SoilProfile(object):
             'SOC and depths arrays must be 2-dimensional'
         assert soc.shape[0] == depths_m.size,\
             'Need one SOC value per soil layer'
-        assert np.all(depths_m <= 0),\
+        assert np.all(depths_m < 0),\
             'Depths should be defined as negative downward from the soil surface'
         assert not hasattr(bedrock, '__len__'),\
             'Only one bedrock depth should be provided'
@@ -386,6 +386,8 @@ class SoilProfile(object):
         self._thickness_m = (self._depths_m - np.vstack((0, self._depths_m[:-1])))\
             .astype(np.float32)
         self._thickness_mm = (self._thickness_m * 1e3).astype(np.float32)
+        # Depth to bottom interface (mm)
+        self._z = -np.abs(depths_m) * 1e3
         # Depth to the bedrock (mm)
         self._z_bedrock = -np.abs(bedrock) * 1e3
         # Depth to "node" (i.e., middle of the soil layer)
@@ -982,10 +984,13 @@ class SoilProfile(object):
             'Compute specific yield, drainage from lateral sub-surface runoff'
             drain_runoff = self._zeros.copy()
             sp_yield = np.inf
-            # Drainage from the bottom layer according to the "flux" bottom
-            #   boundary condition of CLM 5.0 Fortran code, ca. Line 1383 of
-            #   SoilWaterMovementMod.F90
-            drain_runoff[-1] = k[-1] + (dk_dliq[-1] * solution[-1])
+            # If bedrock is within the soil column, there should be no free
+            #   drainage; otherwise...
+            if self._z_bedrock < self._z[-1]:
+                # Drainage from the bottom layer according to the "flux"
+                #   bottom boundary condition of CLM 5.0 Fortran code, ca.
+                #   Line 1383 of SoilWaterMovementMod.F90
+                drain_runoff[-1] = k[-1] + (dk_dliq[-1] * solution[-1])
             # In addition, there may be lateral drainage from the bottom layer
             #   due to saturation within the soil column
             sat_mask = np.full(vwc.shape, False)
