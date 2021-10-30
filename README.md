@@ -23,6 +23,12 @@ If this library doesn't suit your needs, you might check out these related Pytho
 - [`swb` (soil water balance)](https://swb.readthedocs.io/en/latest/index.html)
 
 
+Documentation
+-------------
+
+[Read the online documentation here.](https://arthur-e.github.io/simsoil/)
+
+
 Dependencies
 ------------
 
@@ -60,22 +66,6 @@ $ python simsoil/tests/tests.py
 ```
 
 Note that the test suite may take up to a minute to complete.
-
-
-Documentation
--------------
-
-`pdoc3` is required for generating the documentation. It can be installed using `pip` with:
-
-```sh
-$ pip install simsoil[docs]
-```
-
-To build the HTML documentation:
-
-```sh
-pdoc --html -c latex_math=True --force -o <output_dir> <simsoil_python_dir>
-```
 
 
 Getting Started
