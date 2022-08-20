@@ -88,10 +88,10 @@ class SoilWaterInfiltrationTestSuite(unittest.TestCase):
             self.assertEqual(results.size, DEPTHS.size * f_wet.size)
             # Texture:  [Sandy, Sandy, Clay, Clay]
             # Porosity: [Low,    High,  Low, High]
-            self.assertEqual(results.mean().round(3), (0.223, 0.320, 0.254, 0.325)[i])
-            self.assertEqual( results.min().round(3), (0.148, 0.150, 0.150, 0.150)[i])
+            self.assertEqual(results.mean().round(3), (0.222, 0.315, 0.256, 0.323)[i])
+            self.assertEqual( results.min().round(3), (0.150, 0.150, 0.150, 0.150)[i])
             self.assertEqual( results.max().round(3), (0.300, 0.500, 0.300, 0.422)[i])
-            self.assertEqual( results.var().round(4), (0.0027, 0.0119, 0.0018, 0.0107)[i])
+            self.assertEqual( results.var().round(4), (0.0023, 0.0115, 0.0019, 0.0109)[i])
 
     def test_soils_with_cold_temps(self):
         'Tests model with "flux" boundary condition, cold temperatures'
@@ -108,9 +108,9 @@ class SoilWaterInfiltrationTestSuite(unittest.TestCase):
             # Texture:  [Sandy, None, None, None]
             # Porosity: [Low,   None, None, None]
             self.assertEqual(np.nanmean(results).round(3), 0.217)
-            self.assertEqual( np.nanmin(results).round(3), 0.146)
-            self.assertEqual( np.nanmax(results).round(3), 0.300)
-            self.assertEqual( np.nanvar(results).round(4), 0.0026)
+            self.assertEqual( np.nanmin(results).round(3), 0.148)
+            self.assertEqual( np.nanmax(results).round(3), 0.336)
+            self.assertEqual( np.nanvar(results).round(4), 0.0024)
 
     def test_soils_with_transpiration_with_warm_temps(self):
         'Tests model with transpiration, warm temperatures'
@@ -123,18 +123,18 @@ class SoilWaterInfiltrationTestSuite(unittest.TestCase):
                 influx = self.__class__.influx, dt = 7200, f_saturated = f_wet,
                 adaptive = False)
             self.assertEqual(results.size, DEPTHS.size * f_wet.size)
-            self.assertEqual(results.mean().round(3), (0.105, 0.107)[i])
+            self.assertEqual(results.mean().round(3), (0.104, 0.107)[i])
             self.assertEqual( results.min().round(3), (0.078, 0.078)[i])
             self.assertEqual( results.max().round(3), (0.150, 0.150)[i])
-            self.assertEqual( results.var().round(5), (0.0006, 0.00063)[i])
+            self.assertEqual( results.var().round(5), (0.00065, 0.0007)[i])
             # i == 0 --> Deciduous Broadleaf
             # i == 1 --> Grassland
             if i == 0:
                 self.assertTrue(np.equal(
-                    results[:,-1].round(3), [0.119, 0.108, 0.081, 0.078, 0.084, 0.131]).all())
+                    results[:,-1].round(3), [0.119, 0.097, 0.079, 0.078, 0.086, 0.133]).all())
             if i == 1:
                 self.assertTrue(np.equal(
-                    results[:,-1].round(3), [0.110, 0.096, 0.079, 0.080, 0.113, 0.139]).all())
+                    results[:,-1].round(3), [0.112, 0.087, 0.078, 0.081, 0.118, 0.143]).all())
 
 
 class InfiltrationModelTestSuite(unittest.TestCase):
@@ -190,9 +190,9 @@ class SoilProfileTestSuite(unittest.TestCase):
         self.assertEqual(model._b.max().round(3), 4.223)
         self.assertEqual(model._frac_percolating.max(), 0)
         model = SoilProfile(
-            1, SOC_RATIOS * np.array([6000]), sand = 0.6, clay = 0.1,
+            1, SOC_RATIOS * np.array([5000]), sand = 0.6, clay = 0.1,
             porosity = 0.4, bedrock = -1.8, slope = 0, depths_m = self._depths)
-        self.assertEqual(model._frac_percolating.max().round(3), 0.902)
+        self.assertEqual(model._frac_percolating.max().round(3), 0.877)
 
     def test_hydraulic_constants(self):
         'Should accurately calculate saturated hydraulic conductivity'
@@ -205,12 +205,12 @@ class SoilProfileTestSuite(unittest.TestCase):
         self.assertEqual(model._ksat_uncon.max().round(3), 0.014)
         self.assertEqual(model._ksat_min.max().round(3), 0.008)
         model = SoilProfile(
-            1, SOC_RATIOS * np.array([6000]), sand = 0.6, clay = 0.1,
+            1, SOC_RATIOS * np.array([5000]), sand = 0.6, clay = 0.1,
             porosity = 0.4, bedrock = -1.8, slope = 0, depths_m = self._depths)
-        self.assertEqual(model._ksat.sum().round(3), 0.387)
-        self.assertEqual(model._ksat.max().round(3), 0.091)
-        self.assertEqual(model._ksat_uncon.sum().round(3), 0.06)
-        self.assertEqual(model._ksat_uncon.max().round(3), 0.012)
+        self.assertEqual(model._ksat.sum().round(3), 0.322)
+        self.assertEqual(model._ksat.max().round(3), 0.089)
+        self.assertEqual(model._ksat_uncon.sum().round(3), 0.063)
+        self.assertEqual(model._ksat_uncon.max().round(3), 0.014)
 
     def test_matric_potential_constants(self):
         'Should accurately calculate saturated matric potential'
