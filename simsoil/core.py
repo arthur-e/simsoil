@@ -134,12 +134,11 @@ class InfiltrationModel(object):
         '''
         if n_days is None:
             n_days = influx.size
-        n_layers = self.soil._depths_m.size
-        est_vwc = np.ones((n_layers, n_days)) * np.nan
-        est_error = np.ones((n_layers, n_days)) * np.nan
+        est_vwc = np.ones((self.soil.n_layers, n_days)) * np.nan
+        est_error = np.ones((self.soil.n_layers, n_days)) * np.nan
         est_psi = None
         if self._debug:
-            est_psi = np.ones((n_layers, n_days)) * np.nan
+            est_psi = np.ones((self.soil.n_layers, n_days)) * np.nan
             if not climatology:
                 assert len(transpiration) == n_days
         # If the data are a 365-day climatology, we must recycle the day
@@ -394,6 +393,7 @@ class SoilProfile(object):
         self._z_node = (self._depths_m * 1e3) - self._thickness_mm / 2
         # Define namespace for free parameters
         self._zeros = np.zeros(self._depths_m.shape)
+        self.n_layers = self._depths_m.size
         self.params = Namespace()
         self.params.add('ksat_om', 1e-1) # mm s-1
         self.params.add('alpha', 3) # CLM 4.0 Tech Note, Section 7.3.0
@@ -1137,7 +1137,6 @@ class SoilProfile(object):
         nn = self._depths_m.size
         lhs = np.zeros((nn, nn))
         rhs = np.ones((nn,)) * np.nan
-        n_layers = len(self._depths_m)
         for z, depth in enumerate(self._depths_m):
             # Calculate LHS coefficients of the tridiagonal equation
             if z == 0:
@@ -1146,7 +1145,7 @@ class SoilProfile(object):
                 b = dqout_dliq[z] - (self._thickness_mm / dt)[z]
                 c = dqout_dliq1[z]
                 lhs[z,0:2] = np.array((b, c)).ravel()
-            elif z < (n_layers - 1):
+            elif z < (self.n_layers - 1):
                 # Soil layers 0 < i < N, Equations 2.7.94 - 2.7.97 (CLM 5.0)
                 a = -dqout0_dliq0[z]
                 b = dqout_dliq[z] - dqout0_dliq[z] - (self._thickness_mm / dt)[z]
